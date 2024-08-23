@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Cocina Avanzado</title>
+    <style>
+        .ingrediente, .olla {
+            width: 100px;
+            height: 100px;
+            border: 1px solid black;
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+            line-height: 100px;
+            cursor: move;
+        }
+        .olla {
+            width: 200px;
+            height: 200px;
+            border: 2px solid brown;
+            cursor: default;
+        }
+        #mensaje, #receta-actual, #puntuacion {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #siguiente-plato {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simulador de Cocina Avanzado</h1>
+    <div id="ingredientes">
+        <div class="ingrediente" draggable="true">Zanahoria</div>
+        <div class="ingrediente" draggable="true">Cebolla</div>
+        <div class="ingrediente" draggable="true">Patata</div>
+        <div class="ingrediente" draggable="true">Carne</div>
+        <div class="ingrediente" draggable="true">Tomate</div>
+    </div>
+    <div class="olla" id="olla">Olla</div>
+    <div id="receta-actual"></div>
+    <div id="mensaje"></div>
+    <div id="puntuacion">Puntuación: 0</div>
+    <button id="siguiente-plato" style="display: none;">Siguiente Plato</button>
+
+    <script>
+        const ingredientes = document.querySelectorAll('.ingrediente');
+        const olla = document.getElementById('olla');
+        const mensaje = document.getElementById('mensaje');
+        const recetaActual = document.getElementById('receta-actual');
+        const puntuacionElement = document.getElementById('puntuacion');
+        const siguientePlatoBtn = document.getElementById('siguiente-plato');
+
+        let recetas = [
+            {nombre: "Sopa de verduras", ingredientes: ["Zanahoria", "Cebolla", "Patata"]},
+            {nombre: "Estofado de carne", ingredientes: ["Carne", "Zanahoria", "Patata", "Cebolla"]},
+            {nombre: "Salsa de tomate", ingredientes: ["Tomate", "Cebolla"]}
+        ];
+
+        let recetaActualIndex = 0;
+        let ingredientesEnOlla = [];
+        let puntuacion = 0;
+
+        function actualizarRecetaActual() {
+            recetaActual.textContent = `Receta actual: ${recetas[recetaActualIndex].nombre}`;
+        }
+
+        function verificarReceta() {
+            const recetaCorrecta = recetas[recetaActualIndex].ingredientes.sort().toString();
+            const ollaContenido = ingredientesEnOlla.sort().toString();
+            
+            if (recetaCorrecta === ollaContenido) {
+                puntuacion += 10;
+                puntuacionElement.textContent = `Puntuación: ${puntuacion}`;
+                mensaje.textContent = "¡Receta completada correctamente!";
+                siguientePlatoBtn.style.display = 'block';
+            }
+        }
+
+        ingredientes.forEach(ing => {
+            ing.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', ing.textContent);
+            });
+        });
+
+        olla.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        olla.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const ingrediente = e.dataTransfer.getData('text');
+            if (!ingredientesEnOlla.includes(ingrediente)) {
+                ingredientesEnOlla.push(ingrediente);
+                olla.textContent += ` + ${ingrediente}`;
+                mensaje.textContent = `Has añadido ${ingrediente} a la olla.`;
+                verificarReceta();
+            } else {
+                mensaje.textContent = `Ya has añadido ${ingrediente} a la olla.`;
+            }
+        });
+
+        siguientePlatoBtn.addEventListener('click', () => {
+            recetaActualIndex++;
+            if (recetaActualIndex >= recetas.length) {
+                mensaje.textContent = "¡Felicidades! Has completado todas las recetas.";
+                siguientePlatoBtn.style.display = 'none';
+            } else {
+                ingredientesEnOlla = [];
+                olla.textContent = "Olla";
+                actualizarRecetaActual();
+                mensaje.textContent = "Preparemos el siguiente plato.";
+                siguientePlatoBtn.style.display = 'none';
+            }
+        });
+
+        actualizarRecetaActual();
+    </script>
+</body>
+</html>
